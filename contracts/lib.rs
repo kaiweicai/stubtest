@@ -30,6 +30,8 @@ mod erc20 {
     pub struct Erc20 {
         /// Total token supply.
         total_supply: Lazy<Balance>,
+        //合约模板id和hash映射.
+        template_index_hash_map:Lazy<StorageHashMap<Hash,u32>>,
     }
 
 
@@ -39,8 +41,27 @@ mod erc20 {
         pub fn new(initial_supply: Balance) -> Self {
             let instance = Self {
                 total_supply: Lazy::new(initial_supply),
+                template_index_hash_map:Lazy::new(Default::default()),
             };
             instance
+        }
+
+        /// 添加合约的id和hash值
+        #[ink(message)]
+        pub fn add_template_hash(&mut self,hash:Hash,id:u32)->bool{
+            let value = self.template_index_hash_map.insert(hash,id);
+            if let None = value {
+                //如果该key不存在,返回true
+                true
+            }else{
+                false
+            }
+        }
+
+        /// 查询所有模板的hash值队列
+        #[ink(message)]
+        pub fn get_all_template_hash(&self){
+            self.template_index_hash_map;
         }
 
         /// Returns the total token supply.
