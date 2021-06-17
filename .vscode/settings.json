@@ -1,0 +1,6 @@
+{
+    "rust-analyzer.linkedProjects": [
+        "./contracts/Cargo.toml",
+        "./contracts/template/Cargo.toml",
+    ]
+}
