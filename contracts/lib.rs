@@ -14,14 +14,17 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 use ink_lang as ink;
+use stub::TemplateStub;
 #[ink::contract]
 mod erc20 {
-    #[cfg(not(feature = "ink-as-dependency"))]
-    use ink_env::call::FromAccountId;
     use ink_storage::{
         collections::HashMap as StorageHashMap,
         lazy::Lazy,
     };
+    #[cfg(not(feature = "ink-as-dependency"))]
+    use ink_env::call::FromAccountId;
+    use stub::TemplateStub;
+
     /// A simple ERC-20 contract.
     #[ink(storage)]
     pub struct Erc20 {
@@ -49,7 +52,9 @@ mod erc20 {
 
         #[ink(message)]
         pub fn get_template_id(&self,account_id:AccountId) -> u32 {
-            let template:stub::TemplateStub = FromAccountId::from_account_id(account_id);
+            ink_env::debug_message("-------------1");
+            let template:TemplateStub = FromAccountId::from_account_id(account_id);
+            ink_env::debug_message("-------------2");
             template.get_id()
         }
     }
