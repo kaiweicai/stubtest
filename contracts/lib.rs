@@ -14,6 +14,7 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 use ink_lang as ink;
+// #[ink::contract(env = ink_log::CustomEnvironment)]
 #[ink::contract]
 mod ticker {
     use ink_storage::{collections::{HashMap as StorageHashMap, hashmap::Keys}, lazy::Lazy};
@@ -29,7 +30,10 @@ mod ticker {
         template_index_hash_map:StorageHashMap<Hash,AccountId>,
         //所有者
         owner:AccountId,
-        fee_rate:(u32,u32)
+        
+        fee_rate:(u128,u128),
+        /// 收取费用的人
+        fee_taker:AccountId,
     }
 
 
@@ -43,19 +47,20 @@ mod ticker {
     impl Ticker {
         /// Creates a new ERC-20 contract with the specified initial supply.
         #[ink(constructor)]
-        pub fn new() -> Self {
+        pub fn new(fee_taker:AccountId) -> Self {
             let caller = Self::env().caller();
             let instance = Self {
                 template_index_hash_map:Default::default(),
                 owner:caller,
-                fee_rate:(10,100)
+                fee_rate:(10,100),
+                fee_taker,
             };
             instance
         }
 
         /// 更新费率
         #[ink(message)]
-        pub fn update_fee_rate(&mut self,fee_rate:(u32,u32))->bool{
+        pub fn update_fee_rate(&mut self,fee_rate:(u128,u128))->bool{
             self.ensure_owner();
             self.fee_rate = fee_rate;
             true
@@ -63,12 +68,23 @@ mod ticker {
 
         //查询当前费率
         #[ink(message)]
-        pub fn get_fee_rate(&self)->(u32,u32){
+        pub fn get_fee_rate(&self)->(u128,u128){
             self.fee_rate
         }
 
         /// 开始收费门票.
-
+        #[ink(message,payable)]
+        pub fn buy_ticket(&mut self,ticker:Hash,template_id:Hash)->bool{
+            let income:Balance = self.env().transferred_balance();
+            // ink_log::info!(target: "received payment: {}", income);
+            // 计算需要的手续费
+            let income_per:Balance = income.saturating_mul(Balance::from(self.fee_rate.0));
+            let fee = income_per.checked_div(Balance::from(self.fee_rate.1)).unwrap();
+            // let fee = self.fee_rate.0.saturating_mul(income.into()).saturating_div(self.fee_rate.1);
+            // 把资金按照百分比给资金转给资金账户
+            self.env().transfer(self.fee_taker,fee);
+            true
+        }
         
 
         /// 添加合约的id和hash值

@@ -15,7 +15,7 @@ stub = { version = "0.1.0", path = "stub", default-features = false, features = 
 template = { version = "0.1.0", path = "template", default-features = false, features = ["ink-as-dependency"] }
 scale = { package = "parity-scale-codec", version = "2.1", default-features = false, features = ["derive"] }
 scale-info = { version = "0.6", default-features = false, features = ["derive"], optional = true }
-
+# ink_log = { git = "https://github.com/patractlabs/ink-log", branch = "master", default-features = false, features = ["ink-log-chain-extensions"] }
 
 [lib]
 name = "ticker"
@@ -36,10 +36,23 @@ std = [
     "scale-info/std",
     "stub/std",
     "template/std",
+    # "ink_log/std",
 ]
 ink-as-dependency = []
+ink-experimental-engine = ["ink_env/ink-experimental-engine"]
 [workspace]
 members = [
     "stub",
     "template",
 ]
+[profile.release]
+opt-level = 3
+debug = false
+split-debuginfo = '...'  # Platform-specific.
+debug-assertions = false
+overflow-checks = false
+lto = false
+panic = 'unwind'
+incremental = false
+codegen-units = 16
+rpath = false
