@@ -75,7 +75,12 @@ mod ticker {
         /// 开始收费门票.
         #[ink(message,payable)]
         pub fn buy_ticket(&mut self,ticker:Hash,template_id:Hash)->bool{
+            ink_env::debug_message("received payment");
             let income:Balance = self.env().transferred_balance();
+            //做前置检查.判断大于0
+            /// 购买票,如果成功则返回需要的资金.
+            ///开始扣除资金.
+            
             // ink_log::info!(target: "received payment: {}", income);
             // 计算需要的手续费
             let income_per:Balance = income.saturating_mul(Balance::from(self.fee_rate.0));
@@ -83,6 +88,8 @@ mod ticker {
             // let fee = self.fee_rate.0.saturating_mul(income.into()).saturating_div(self.fee_rate.1);
             // 把资金按照百分比给资金转给资金账户
             self.env().transfer(self.fee_taker,fee);
+            /// 将剩余的金额转账给会议举办者.
+            
             true
         }
         
