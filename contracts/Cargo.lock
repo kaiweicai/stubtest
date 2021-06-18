@@ -295,21 +295,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e78d4f1cc4ae33bbfc157ed5d5a5ef3bc29227303d595861deb238fcec4e9457"
 
 [[package]]
-name = "erc20"
-version = "3.0.0-rc3"
-dependencies = [
- "ink_env",
- "ink_lang",
- "ink_metadata",
- "ink_primitives",
- "ink_storage",
- "parity-scale-codec",
- "scale-info",
- "stub",
- "template",
-]
-
-[[package]]
 name = "funty"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1114,6 +1099,22 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
+]
+
+[[package]]
+name = "ticker"
+version = "3.0.0-rc3"
+dependencies = [
+ "ink_env",
+ "ink_lang",
+ "ink_metadata",
+ "ink_prelude",
+ "ink_primitives",
+ "ink_storage",
+ "parity-scale-codec",
+ "scale-info",
+ "stub",
+ "template",
 ]
 
 [[package]]

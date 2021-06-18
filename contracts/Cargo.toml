@@ -1,5 +1,5 @@
 [package]
-name = "erc20"
+name = "ticker"
 version = "3.0.0-rc3"
 authors = ["Parity Technologies <admin@parity.io>"]
 edition = "2018"
@@ -10,6 +10,7 @@ ink_metadata = { version = "3.0.0-rc3", git = "https://github.com/paritytech/ink
 ink_env = { version = "3.0.0-rc3", git = "https://github.com/paritytech/ink", default-features = false }
 ink_storage = { version = "3.0.0-rc3", git = "https://github.com/paritytech/ink", default-features = false }
 ink_lang = { version = "3.0.0-rc3", git = "https://github.com/paritytech/ink", default-features = false }
+ink_prelude = { version = "3.0.0-rc3", git = "https://github.com/paritytech/ink", default-features = false }
 stub = { version = "0.1.0", path = "stub", default-features = false, features = ["ink-as-dependency"] }
 template = { version = "0.1.0", path = "template", default-features = false, features = ["ink-as-dependency"] }
 scale = { package = "parity-scale-codec", version = "2.1", default-features = false, features = ["derive"] }
@@ -17,7 +18,7 @@ scale-info = { version = "0.6", default-features = false, features = ["derive"],
 
 
 [lib]
-name = "erc20"
+name = "ticker"
 path = "lib.rs"
 crate-type = ["cdylib"]
 

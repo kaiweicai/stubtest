@@ -14,42 +14,67 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 use ink_lang as ink;
-use stub::TemplateStub;
 #[ink::contract]
-mod erc20 {
-    use ink_storage::{
-        collections::HashMap as StorageHashMap,
-        lazy::Lazy,
-    };
+mod ticker {
+    use ink_storage::{collections::{HashMap as StorageHashMap, hashmap::Keys}, lazy::Lazy};
     #[cfg(not(feature = "ink-as-dependency"))]
     use ink_env::call::FromAccountId;
     use stub::TemplateStub;
+    use ink_prelude::vec::Vec;
 
     /// A simple ERC-20 contract.
     #[ink(storage)]
-    pub struct Erc20 {
-        /// Total token supply.
-        total_supply: Lazy<Balance>,
+    pub struct Ticker {
         //合约模板id和hash映射.
-        template_index_hash_map:Lazy<StorageHashMap<Hash,u32>>,
+        template_index_hash_map:StorageHashMap<Hash,AccountId>,
+        //所有者
+        owner:AccountId,
+        fee_rate:(u32,u32)
     }
 
 
-    impl Erc20 {
+    #[derive(Debug, PartialEq, Eq, scale::Encode, scale::Decode)]
+    #[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
+    pub enum Error {
+        /// Returned if not enough balance to fulfill a request is available.
+        NotOwner,
+    }
+
+    impl Ticker {
         /// Creates a new ERC-20 contract with the specified initial supply.
         #[ink(constructor)]
-        pub fn new(initial_supply: Balance) -> Self {
+        pub fn new() -> Self {
+            let caller = Self::env().caller();
             let instance = Self {
-                total_supply: Lazy::new(initial_supply),
-                template_index_hash_map:Lazy::new(Default::default()),
+                template_index_hash_map:Default::default(),
+                owner:caller,
+                fee_rate:(10,100)
             };
             instance
         }
 
+        /// 更新费率
+        #[ink(message)]
+        pub fn update_fee_rate(&mut self,fee_rate:(u32,u32))->bool{
+            self.ensure_owner();
+            self.fee_rate = fee_rate;
+            true
+        }
+
+        //查询当前费率
+        #[ink(message)]
+        pub fn get_fee_rate(&self)->(u32,u32){
+            self.fee_rate
+        }
+
+        /// 开始收费门票.
+
+        
+
         /// 添加合约的id和hash值
         #[ink(message)]
-        pub fn add_template_hash(&mut self,hash:Hash,id:u32)->bool{
-            let value = self.template_index_hash_map.insert(hash,id);
+        pub fn add_template_hash(&mut self,hash:Hash,account_id:AccountId)->bool{
+            let value = self.template_index_hash_map.insert(hash,account_id);
             if let None = value {
                 //如果该key不存在,返回true
                 true
@@ -60,16 +85,29 @@ mod erc20 {
 
         /// 查询所有模板的hash值队列
         #[ink(message)]
-        pub fn get_all_template_hash(&self){
-            self.template_index_hash_map;
+        pub fn get_all_template_hash(&self)->Vec<Hash> {
+            let mut result:Vec<Hash> = Vec::new();
+            for k in self.template_index_hash_map.keys(){
+                result.push(*k);
+            }
+            result
+            // let temp_map:Vec<Hash> = self.template_index_hash_map.iter().map(|k,v|k).collect();
+            // temp_map
         }
 
-        /// Returns the total token supply.
         #[ink(message)]
-        pub fn total_supply(&self) -> Balance {
-            *self.total_supply
+        pub fn get_template_address(&self,hash:Hash)->AccountId {
+            self.template_index_hash_map.get(&hash).unwrap().clone()
         }
 
+        #[ink(message)]
+        pub fn get_template_id_by_hash(&self,hash:Hash) -> u32 {
+            ink_env::debug_message("-------------1");
+            let address:AccountId = self.template_index_hash_map.get(&hash).unwrap().clone();
+            let template:TemplateStub = FromAccountId::from_account_id(address);
+            ink_env::debug_message("-------------2");
+            template.get_id()
+        }
 
         #[ink(message)]
         pub fn get_template_id(&self,account_id:AccountId) -> u32 {
@@ -77,6 +115,11 @@ mod erc20 {
             let template:TemplateStub = FromAccountId::from_account_id(account_id);
             ink_env::debug_message("-------------2");
             template.get_id()
+        }
+
+        /// Panic if `owner` is not an owner,
+        fn ensure_owner(&self) {
+            assert_eq!(self.owner,self.env().caller(),"not owner");
         }
     }
 }
